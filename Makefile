@@ -9,11 +9,9 @@ postgres_start:
 postgres_stop:
 	docker stop my-postgres
 migrate_up:
-	#migrate -path scripts/db/migration -database "postgres://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
-	migrate -path scripts/db/migration -database "postgres://root:secret@postgres:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path scripts/db/migration -database "postgres://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
 migrate_down:
-	#migrate -path scripts/db/migration -database "postgres://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
-	migrate -path scripts/db/migration -database "postgres://root:secret@postgres:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path scripts/db/migration -database "postgres://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
 sqlc:
 	sqlc generate
 test_db:
