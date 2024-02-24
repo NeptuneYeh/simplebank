@@ -1,0 +1,22 @@
+version: "2"
+cloud:
+    organization: ""
+    project: ""
+    hostname: ""
+sql:
+  - engine:  "postgresql"
+    queries: "scripts/db/query"       # 我們會把 sql query 寫在這邊
+    schema:  "scripts/db/migration"   # 這是我們的 schema 位置
+    gen:
+      go:
+        package: "postgresdb"       # gen 出來的 function 的 package name
+        out: "internal/infrastructure/database/postgres/sqlc"     # gen 出來的 code 放的位置
+        emit_json_tags: true
+        emit_prepared_queries: false
+        emit_interface: false
+        emit_exact_table_names: false
+overrides:
+    go: null
+plugins: []
+rules: []
+options: {}
