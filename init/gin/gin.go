@@ -1,40 +1,41 @@
 package gin
 
 import (
-	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/internal/application/controllers"
+	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 	"log"
 )
 
 type Module struct {
-	router *gin.Engine
+	Router *gin.Engine
 }
 
-func NewModule(config *config.Module) *Module {
+func NewModule(store postgresdb.Store) *Module {
 	r := gin.Default()
 	ginModule := &Module{
-		router: r,
+		Router: r,
 	}
 	gin.ForceConsoleColor()
-	ginModule.setupRoute(config)
+	ginModule.setupRoute(store)
 
 	return ginModule
 }
 
 // setup route
-func (module *Module) setupRoute(config *config.Module) {
+func (module *Module) setupRoute(store postgresdb.Store) {
 	// init controller
-	accountController := controllers.NewAccountController(config)
+	accountController := controllers.NewAccountController(store)
 	// add routes to router
-	module.router.POST("/accounts", accountController.CreateAccount)
-	module.router.GET("/accounts/:id", accountController.GetAccount)
-	module.router.GET("/accounts", accountController.ListAccount)
+	module.Router.POST("/accounts", accountController.CreateAccount)
+	module.Router.GET("/accounts/:id", accountController.GetAccount)
+	module.Router.GET("/accounts", accountController.ListAccount)
 }
 
 // Run gin
 func (module *Module) Run(address string) {
-	err := module.router.Run(address)
+	err := module.Router.Run(address)
 	if err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}

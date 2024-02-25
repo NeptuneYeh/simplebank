@@ -18,5 +18,7 @@ test_db:
 	go test -v -cover ./test/db/
 server:
 	go run ./cmd/main.go
+mock_db:
+	mockgen -package mockdb -destination internal/infrastructure/database/postgres/mock/store.go github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc Store
 
-.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server
+.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock_db

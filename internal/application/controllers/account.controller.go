@@ -3,27 +3,20 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/internal/application/requests"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"log"
 	"net/http"
 )
 
 type AccountController struct {
-	store *postgresdb.Store
+	store postgresdb.Store
 }
 
-func NewAccountController(config *config.Module) *AccountController {
-	// Controller 直接依賴一個 DB model
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
-	if err != nil {
-		log.Fatal("cannot connect to db: ", err)
-	}
+func NewAccountController(store postgresdb.Store) *AccountController {
 	return &AccountController{
-		store: postgresdb.NewStore(conn),
+		store: store,
 	}
 }
 
