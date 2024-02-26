@@ -2,7 +2,7 @@ package gin
 
 import (
 	"github.com/NeptuneYeh/simplebank/internal/application/controllers"
-	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
+	"github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"log"
