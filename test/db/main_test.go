@@ -10,17 +10,12 @@ import (
 	"testing"
 )
 
-const (
-	dbDriver = "postgres"
-	dbSource = "postgres://root:secret@localhost:5432/simple_bank?sslmode=disable"
-)
-
 var testQueries *postgresdb.Queries
 var testDB *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	configModule := config.NewModule()
+	configModule := config.NewModule("../../")
 
 	testDB, err = sql.Open(configModule.DBDriver, configModule.DBSource)
 	if err != nil {

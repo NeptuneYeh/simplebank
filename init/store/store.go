@@ -29,3 +29,13 @@ func NewModule() *Module {
 
 	return storeModule
 }
+
+func NewModuleForTest(store postgresdb.Store) *Module {
+	// init Store
+	MainStore = &store
+	storeModule := &Module{
+		Store: store,
+	}
+
+	return storeModule
+}

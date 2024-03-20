@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/NeptuneYeh/simplebank/init/gin"
+	"github.com/NeptuneYeh/simplebank/init/store"
 	mockdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/mock"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/golang/mock/gomock"
@@ -87,11 +88,12 @@ func TestGetAccountAPI(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			store := mockdb.NewMockStore(ctrl)
+			mockStore := mockdb.NewMockStore(ctrl)
 			// 這樣就會運行上面定義的 func 裡面的語句
-			tc.buildStubs(store)
+			tc.buildStubs(mockStore)
 
-			ginModule := gin.NewModule(store)
+			_ = store.NewModuleForTest(mockStore)
+			ginModule := gin.NewModule()
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/accounts/%d", tc.accountID)
