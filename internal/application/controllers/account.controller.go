@@ -3,7 +3,8 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"github.com/NeptuneYeh/simplebank/internal/application/requests"
+	"github.com/NeptuneYeh/simplebank/init/store"
+	"github.com/NeptuneYeh/simplebank/internal/application/requests/accountRequests"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
@@ -14,18 +15,14 @@ type AccountController struct {
 	store postgresdb.Store
 }
 
-func NewAccountController(store postgresdb.Store) *AccountController {
+func NewAccountController() *AccountController {
 	return &AccountController{
-		store: store,
+		store: *store.MainStore,
 	}
 }
 
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
-}
-
 func (c *AccountController) CreateAccount(ctx *gin.Context) {
-	var req requests.CreateAccountRequest
+	var req accountRequests.CreateAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -47,7 +44,7 @@ func (c *AccountController) CreateAccount(ctx *gin.Context) {
 }
 
 func (c *AccountController) GetAccount(ctx *gin.Context) {
-	var req requests.GetAccountRequest
+	var req accountRequests.GetAccountRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -67,7 +64,7 @@ func (c *AccountController) GetAccount(ctx *gin.Context) {
 }
 
 func (c *AccountController) ListAccount(ctx *gin.Context) {
-	var req requests.ListAccountRequest
+	var req accountRequests.ListAccountRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return

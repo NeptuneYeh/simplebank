@@ -1,36 +1,46 @@
 package init
 
 import (
-	"database/sql"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gin"
-	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
+	"github.com/NeptuneYeh/simplebank/init/logger"
+	"github.com/NeptuneYeh/simplebank/init/store"
 	_ "github.com/lib/pq"
-	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 type MainInitProcess struct {
-	configModule *config.Module
-	storeModule  postgresdb.Store
-	ginModule    *gin.Module
+	ConfigModule *config.Module
+	LogModule    *logger.Module
+	StoreModule  *store.Module
+	GinModule    *gin.Module
+	OsChannel    chan os.Signal
 }
 
-func NewMainInitProcess() *MainInitProcess {
-	configModule := config.NewModule()
-	// init Store
-	conn, err := sql.Open(configModule.DBDriver, configModule.DBSource)
-	if err != nil {
-		log.Fatal("cannot connect to db: ", err)
-	}
-	store := postgresdb.NewStore(conn)
+func NewMainInitProcess(configPath string) *MainInitProcess {
+	configModule := config.NewModule(configPath)
+	logModule := logger.NewModule()
+	storeModule := store.NewModule()
+	ginModule := gin.NewModule()
+
+	channel := make(chan os.Signal, 1)
 	return &MainInitProcess{
-		configModule: configModule,
-		storeModule:  store,
-		ginModule:    gin.NewModule(store),
+		ConfigModule: configModule,
+		LogModule:    logModule,
+		StoreModule:  storeModule,
+		GinModule:    ginModule,
+		OsChannel:    channel,
 	}
 }
 
 // Run run gin module
 func (m *MainInitProcess) Run() {
-	m.ginModule.Run(m.configModule.ServerAddress)
+	m.GinModule.Run(m.ConfigModule.ServerAddress)
+	// register os signal for graceful shutdown
+	signal.Notify(m.OsChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	s := <-m.OsChannel
+	m.LogModule.Logger.Fatal().Msg("Received signal: " + s.String())
+	_ = m.GinModule.Shutdown()
 }

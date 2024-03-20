@@ -55,8 +55,8 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(queries *Queries) err
 	return tx.Commit()
 }
 
-// TransferTx performs a money transfer from one account to the other.
-// It creates a transfer record, add account entries, and update account's balance within a single database tx
+// TransferTx performs a money transfer from one accountRequests to the other.
+// It creates a transfer record, add accountRequests entries, and update accountRequests's balance within a single database tx
 func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 

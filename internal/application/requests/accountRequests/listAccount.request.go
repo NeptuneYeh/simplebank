@@ -1,4 +1,4 @@
-package requests
+package accountRequests
 
 type ListAccountRequest struct {
 	PageID   int32 `form:"page_id" binding:"required,min=1"`
