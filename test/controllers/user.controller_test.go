@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	myGin "github.com/NeptuneYeh/simplebank/init/gin"
+	"github.com/NeptuneYeh/simplebank/init/logger"
 	"github.com/NeptuneYeh/simplebank/init/store"
 	mockdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/mock"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
@@ -53,42 +55,42 @@ func TestCreateUserAPI(t *testing.T) {
 				requireBodyMatchUser(t, recorder.Body, user)
 			},
 		},
-		//{
-		//	name: "InternalError",
-		//	body: gin.H{
-		//		"username":  user.Username,
-		//		"password":  password,
-		//		"full_name": user.FullName,
-		//		"email":     user.Email,
-		//	},
-		//	buildStubs: func(store *mockdb.MockStore) {
-		//		store.EXPECT().
-		//			CreateUser(gomock.Any(), gomock.Any()).
-		//			Times(1).
-		//			Return(postgresdb.User{}, sql.ErrConnDone)
-		//	},
-		//	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		//		require.Equal(t, http.StatusInternalServerError, recorder.Code)
-		//	},
-		//},
-		//{
-		//	name: "DuplicateUsername",
-		//	body: gin.H{
-		//		"username":  user.Username,
-		//		"password":  password,
-		//		"full_name": user.FullName,
-		//		"email":     user.Email,
-		//	},
-		//	buildStubs: func(store *mockdb.MockStore) {
-		//		store.EXPECT().
-		//			CreateUser(gomock.Any(), gomock.Any()).
-		//			Times(1).
-		//			Return(postgresdb.User{}, postgresdb.ErrUniqueViolation)
-		//	},
-		//	checkResponse: func(recorder *httptest.ResponseRecorder) {
-		//		require.Equal(t, http.StatusForbidden, recorder.Code)
-		//	},
-		//},
+		{
+			name: "InternalError",
+			body: gin.H{
+				"username":  user.Username,
+				"password":  password,
+				"full_name": user.FullName,
+				"email":     user.Email,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(1).
+					Return(postgresdb.User{}, sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "DuplicateUsername",
+			body: gin.H{
+				"username":  user.Username,
+				"password":  password,
+				"full_name": user.FullName,
+				"email":     user.Email,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(1).
+					Return(postgresdb.User{}, postgresdb.ErrUniqueViolation)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
 		{
 			name: "InvalidUsername",
 			body: gin.H{
@@ -152,6 +154,7 @@ func TestCreateUserAPI(t *testing.T) {
 			mockStore := mockdb.NewMockStore(ctrl)
 			tc.buildStubs(mockStore)
 
+			_ = logger.NewModule()
 			_ = store.NewModuleForTest(mockStore)
 			ginModule := myGin.NewModule()
 			recorder := httptest.NewRecorder()
@@ -177,10 +180,10 @@ func randomUser(t *testing.T) (user postgresdb.User, password string) {
 	require.NoError(t, err)
 
 	user = postgresdb.User{
-		Username:       "tom_" + fmt.Sprintf("%04d", randomNumber),
+		Username:       "tom" + fmt.Sprintf("%04d", randomNumber),
 		HashedPassword: hashedPassword,
-		FullName:       "tom_" + fmt.Sprintf("%04d", randomNumber),
-		Email:          "tom_" + fmt.Sprintf("%04d", randomNumber) + "@yopmail.com",
+		FullName:       "tom" + fmt.Sprintf("%04d", randomNumber),
+		Email:          "tom" + fmt.Sprintf("%04d", randomNumber) + "@yopmail.com",
 	}
 	return
 }
