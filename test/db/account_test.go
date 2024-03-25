@@ -3,19 +3,17 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/stretchr/testify/require"
-	"math/rand"
 	"testing"
 	"time"
 )
 
 // 在Go語言中，t 是 testing.T 類型的一個參數，用於撰寫測試。這是Go標準庫中 testing 包提供的一個結構體，它包含了用於報告測試失敗或錯誤的方法。
 func createTestAccount(t *testing.T) postgresdb.Account {
-	randomNumber := rand.Intn(10000)
+	user := createTestUser(t)
 	arg := postgresdb.CreateAccountParams{
-		Owner:    "tom_" + fmt.Sprintf("%04d", randomNumber),
+		Owner:    user.Username,
 		Balance:  100,
 		Currency: "USD",
 	}

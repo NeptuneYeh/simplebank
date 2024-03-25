@@ -4,6 +4,7 @@ import (
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gin"
 	"github.com/NeptuneYeh/simplebank/init/logger"
+	"github.com/NeptuneYeh/simplebank/init/redis"
 	"github.com/NeptuneYeh/simplebank/init/store"
 	_ "github.com/lib/pq"
 	"os"
@@ -15,6 +16,7 @@ type MainInitProcess struct {
 	ConfigModule *config.Module
 	LogModule    *logger.Module
 	StoreModule  *store.Module
+	RedisModule  *redis.Module
 	GinModule    *gin.Module
 	OsChannel    chan os.Signal
 }
@@ -23,6 +25,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 	configModule := config.NewModule(configPath)
 	logModule := logger.NewModule()
 	storeModule := store.NewModule()
+	redisModule := redis.NewModule()
 	ginModule := gin.NewModule()
 
 	channel := make(chan os.Signal, 1)
@@ -30,6 +33,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 		ConfigModule: configModule,
 		LogModule:    logModule,
 		StoreModule:  storeModule,
+		RedisModule:  redisModule,
 		GinModule:    ginModule,
 		OsChannel:    channel,
 	}

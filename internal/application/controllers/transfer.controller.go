@@ -25,7 +25,7 @@ func NewTransferController() *TransferController {
 func (c *TransferController) CreateTransfer(ctx *gin.Context) {
 	var req transferRequests.TransferRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, ErrorResponse(err))
 		return
 	}
 
@@ -45,7 +45,7 @@ func (c *TransferController) CreateTransfer(ctx *gin.Context) {
 
 	result, err := c.store.TransferTx(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, ErrorResponse(err))
 		return
 	}
 
@@ -56,16 +56,16 @@ func (c *TransferController) validAccount(ctx *gin.Context, accountID int64, cur
 	account, err := c.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, ErrorResponse(err))
 			return false
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, ErrorResponse(err))
 		return false
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, ErrorResponse(err))
 		return false
 	}
 

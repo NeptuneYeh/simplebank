@@ -32,6 +32,7 @@ func NewModule() *Module {
 // setup route
 func (module *Module) setupRoute() {
 	// init controller
+	userController := controllers.NewUserController()
 	accountController := controllers.NewAccountController()
 	transferController := controllers.NewTransferController()
 	// binding validator
@@ -42,6 +43,7 @@ func (module *Module) setupRoute() {
 		}
 	}
 	// add routes to router
+	module.Router.POST("/users", userController.CreateUser)
 	module.Router.POST("/accounts", accountController.CreateAccount)
 	module.Router.GET("/accounts/:id", accountController.GetAccount)
 	module.Router.GET("/accounts", accountController.ListAccount)

@@ -22,5 +22,7 @@ mock_db:
 	mockgen -package mockdb -destination internal/infrastructure/database/postgres/mock/store.go github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc Store
 dev_service_up:
 	docker-compose -p simple_bank up -d
+test_all:
+	go test -coverpkg=./... -coverprofile=coverage.out ./test/...
 
 .PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock_db dev_service_up
