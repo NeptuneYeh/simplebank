@@ -3,6 +3,7 @@ package gin
 import (
 	"context"
 	"github.com/NeptuneYeh/simplebank/internal/application/controllers"
+	myValidator "github.com/NeptuneYeh/simplebank/tools/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -35,7 +36,7 @@ func (module *Module) setupRoute() {
 	transferController := controllers.NewTransferController()
 	// binding validator
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		err := v.RegisterValidation("currency", controllers.ValidCurrency)
+		err := v.RegisterValidation("currency", myValidator.ValidCurrency)
 		if err != nil {
 			return
 		}
