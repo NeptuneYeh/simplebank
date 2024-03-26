@@ -2,7 +2,9 @@ package gin
 
 import (
 	"context"
+	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/internal/application/controllers"
+	"github.com/NeptuneYeh/simplebank/internal/application/middlewares"
 	myValidator "github.com/NeptuneYeh/simplebank/tools/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -18,6 +20,8 @@ type Module struct {
 	Server *http.Server
 }
 
+var MainGin *Module
+
 func NewModule() *Module {
 	r := gin.Default()
 	ginModule := &Module{
@@ -25,6 +29,8 @@ func NewModule() *Module {
 	}
 	gin.ForceConsoleColor()
 	ginModule.setupRoute()
+
+	MainGin = ginModule
 
 	return ginModule
 }
@@ -42,13 +48,17 @@ func (module *Module) setupRoute() {
 			return
 		}
 	}
+
 	// add routes to router
 	module.Router.POST("/users", userController.CreateUser)
-	module.Router.POST("/accounts", accountController.CreateAccount)
-	module.Router.GET("/accounts/:id", accountController.GetAccount)
-	module.Router.GET("/accounts", accountController.ListAccount)
+	module.Router.POST("/users/login", userController.LoginUser)
 
-	module.Router.POST("/transfers", transferController.CreateTransfer)
+	authRoutes := module.Router.Group("/").Use(middlewares.AuthMiddleware(auth.MainAuth))
+	authRoutes.POST("/accounts", accountController.CreateAccount)
+	authRoutes.GET("/accounts/:id", accountController.GetAccount)
+	authRoutes.GET("/accounts", accountController.ListAccount)
+
+	authRoutes.POST("/transfers", transferController.CreateTransfer)
 }
 
 // Run gin

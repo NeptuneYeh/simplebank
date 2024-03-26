@@ -1,6 +1,7 @@
 package init
 
 import (
+	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gin"
 	"github.com/NeptuneYeh/simplebank/init/logger"
@@ -15,6 +16,7 @@ import (
 type MainInitProcess struct {
 	ConfigModule *config.Module
 	LogModule    *logger.Module
+	AuthModule   *auth.Module
 	StoreModule  *store.Module
 	RedisModule  *redis.Module
 	GinModule    *gin.Module
@@ -24,6 +26,7 @@ type MainInitProcess struct {
 func NewMainInitProcess(configPath string) *MainInitProcess {
 	configModule := config.NewModule(configPath)
 	logModule := logger.NewModule()
+	authModule := auth.NewModule()
 	storeModule := store.NewModule()
 	redisModule := redis.NewModule()
 	ginModule := gin.NewModule()
@@ -32,6 +35,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 	return &MainInitProcess{
 		ConfigModule: configModule,
 		LogModule:    logModule,
+		AuthModule:   authModule,
 		StoreModule:  storeModule,
 		RedisModule:  redisModule,
 		GinModule:    ginModule,

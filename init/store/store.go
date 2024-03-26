@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-var MainStore *postgresdb.Store
+var MainStore postgresdb.Store
 
 type Module struct {
 	Store postgresdb.Store
@@ -21,7 +21,7 @@ func NewModule() *Module {
 		log.Fatal("cannot connect to db: ", err)
 	}
 	store := postgresdb.NewStore(conn)
-	MainStore = &store
+	MainStore = store
 
 	storeModule := &Module{
 		Store: store,
@@ -32,7 +32,7 @@ func NewModule() *Module {
 
 func NewModuleForTest(store postgresdb.Store) *Module {
 	// init Store
-	MainStore = &store
+	MainStore = store
 	storeModule := &Module{
 		Store: store,
 	}
