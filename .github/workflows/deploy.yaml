@@ -4,6 +4,10 @@ on:
   # 練習僅限手動觸發
   workflow_dispatch:
 
+permissions:
+  id-token: write # 確保 Github actions 可以產生 OIDC token 和 AWS 溝通
+  contents: read
+
 jobs:
 
   build:
@@ -18,7 +22,7 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         role-session-name: GithubActionsSimpleBankDeploy
-        role-to-assume: arn:aws:iam::905418378273:role/aws-service-role/replication.ecr.amazonaws.com/AWSServiceRoleForECRReplication
+        role-to-assume: arn:aws:iam::905418378273:role/simplebank-ecr-full-access # 必須在 AWS 上做好 role 和 policy
         aws-region: ap-northeast-3
 
     - name: Login to Amazon ECR
