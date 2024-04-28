@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/logger"
@@ -13,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	"net/http"
+	"time"
 )
 
 type UserController struct {
@@ -95,11 +97,102 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 	}
 
 	// create accessToken
-	accessToken, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.AccessTokenDuration)
+	accessToken, accessPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
+		return
+	}
+
+	// create refreshToken
+	refreshToken, refreshPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
+		return
+	}
+
+	session, err := c.store.CreateSession(ctx, postgresdb.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
+		return
+	}
 
 	resp := userRequests.LoginUserResponse{
-		AccessToken: accessToken,
-		User:        userRequests.NewUserResponse(user),
+		SessionID:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User:                  userRequests.NewUserResponse(user),
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func (c *UserController) RenewAccessToken(ctx *gin.Context) {
+	var req userRequests.RenewAccessTokenRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, base.ErrorResponse(err))
+		return
+	}
+
+	refreshPayload, err := auth.MainAuth.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, base.ErrorResponse(err))
+		return
+	}
+
+	session, err := c.store.GetSession(ctx, refreshPayload.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(err))
+		return
+	}
+
+	if session.IsBlocked {
+		err := fmt.Errorf("blocked session")
+		ctx.JSON(http.StatusUnauthorized, base.ErrorResponse(err))
+		return
+	}
+
+	if session.Username != refreshPayload.Username {
+		err := fmt.Errorf("incorrect session user")
+		ctx.JSON(http.StatusUnauthorized, base.ErrorResponse(err))
+		return
+	}
+
+	if session.RefreshToken != req.RefreshToken {
+		err := fmt.Errorf("mismatched refresh token")
+		ctx.JSON(http.StatusUnauthorized, base.ErrorResponse(err))
+		return
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		err := fmt.Errorf("expired session")
+		ctx.JSON(http.StatusUnauthorized, base.ErrorResponse(err))
+		return
+	}
+
+	// create accessToken
+	accessToken, accessPayload, err := auth.MainAuth.CreateToken(refreshPayload.Username, config.MainConfig.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
+		return
+	}
+
+	resp := userRequests.RenewAccessTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: accessPayload.ExpiredAt,
 	}
 
 	ctx.JSON(http.StatusOK, resp)

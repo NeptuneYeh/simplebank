@@ -52,6 +52,7 @@ func (module *Module) setupRoute() {
 	// add routes to router
 	module.Router.POST("/users", userController.CreateUser)
 	module.Router.POST("/users/login", userController.LoginUser)
+	module.Router.POST("/tokens/renew_access", userController.RenewAccessToken)
 
 	authRoutes := module.Router.Group("/").Use(middlewares.AuthMiddleware(auth.MainAuth))
 	authRoutes.POST("/accounts", accountController.CreateAccount)
