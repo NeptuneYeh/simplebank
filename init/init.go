@@ -3,6 +3,7 @@ package init
 import (
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
+	"github.com/NeptuneYeh/simplebank/init/gapi"
 	"github.com/NeptuneYeh/simplebank/init/gin"
 	"github.com/NeptuneYeh/simplebank/init/logger"
 	"github.com/NeptuneYeh/simplebank/init/redis"
@@ -20,6 +21,7 @@ type MainInitProcess struct {
 	StoreModule  *store.Module
 	RedisModule  *redis.Module
 	GinModule    *gin.Module
+	GRPCModule   *gapi.Module
 	OsChannel    chan os.Signal
 }
 
@@ -30,6 +32,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 	storeModule := store.NewModule()
 	redisModule := redis.NewModule()
 	ginModule := gin.NewModule()
+	gapiModule := gapi.NewModule()
 
 	channel := make(chan os.Signal, 1)
 	return &MainInitProcess{
@@ -39,6 +42,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 		StoreModule:  storeModule,
 		RedisModule:  redisModule,
 		GinModule:    ginModule,
+		GRPCModule:   gapiModule,
 		OsChannel:    channel,
 	}
 }
@@ -46,6 +50,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 // Run run gin module
 func (m *MainInitProcess) Run() {
 	m.GinModule.Run(m.ConfigModule.ServerAddress)
+	m.GRPCModule.Run(m.ConfigModule.GRPCServerAddress)
 	// register os signal for graceful shutdown
 	signal.Notify(m.OsChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	s := <-m.OsChannel

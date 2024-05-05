@@ -24,5 +24,10 @@ dev_service_up:
 	docker compose -p simple_bank up -d
 test_all:
 	go test -coverpkg=./... -coverprofile=coverage.out ./test/...
+proto:
+	rm -f pb/*.go
+	protoc --proto_path=proto --go_out=pb --go_opt=paths=source_relative \
+        --go-grpc_out=pb --go-grpc_opt=paths=source_relative \
+        proto/*.proto
 
-.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock_db dev_service_up
+.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock_db dev_service_up proto
