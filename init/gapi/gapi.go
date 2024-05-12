@@ -1,6 +1,7 @@
 package gapi
 
 import (
+	"github.com/NeptuneYeh/simplebank/internal/grpcApp"
 	"github.com/NeptuneYeh/simplebank/pb"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -10,7 +11,7 @@ import (
 )
 
 type Module struct {
-	pb.UnimplementedSimpleBankServer
+	GrpcApi    *grpcApp.Module
 	GrpcServer *grpc.Server
 	Listener   net.Listener
 }
@@ -19,6 +20,7 @@ var MainGapi *Module
 
 func NewModule() *Module {
 	gAPIModule := &Module{
+		GrpcApi:    grpcApp.NewModule(),
 		GrpcServer: grpc.NewServer(),
 	}
 
@@ -35,7 +37,7 @@ func (module *Module) Run(address string) {
 	}
 
 	// Register your services here
-	pb.RegisterSimpleBankServer(module.GrpcServer, module)
+	pb.RegisterSimpleBankServer(module.GrpcServer, module.GrpcApi)
 	reflection.Register(module.GrpcServer) // 使用反射可以使用 grpcurl debug, prod 不建議用
 
 	go func() {
