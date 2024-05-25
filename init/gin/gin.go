@@ -70,6 +70,7 @@ func (module *Module) Run(address string) {
 	}
 
 	go func() {
+		log.Printf("Starting gin framework server on %s\n", address)
 		if err := module.Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Failed to run server: %v", err)
 		}
