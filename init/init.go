@@ -4,6 +4,7 @@ import (
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gapi"
+	"github.com/NeptuneYeh/simplebank/init/gin"
 	"github.com/NeptuneYeh/simplebank/init/grpcGateway"
 	"github.com/NeptuneYeh/simplebank/init/logger"
 	"github.com/NeptuneYeh/simplebank/init/redis"
@@ -15,12 +16,12 @@ import (
 )
 
 type MainInitProcess struct {
-	ConfigModule *config.Module
-	LogModule    *logger.Module
-	AuthModule   *auth.Module
-	StoreModule  *store.Module
-	RedisModule  *redis.Module
-	//GinModule         *gin.Module
+	ConfigModule      *config.Module
+	LogModule         *logger.Module
+	AuthModule        *auth.Module
+	StoreModule       *store.Module
+	RedisModule       *redis.Module
+	GinModule         *gin.Module
 	GRPCModule        *gapi.Module
 	GRPCGatewayModule *grpcGateway.Module
 	OsChannel         chan os.Signal
@@ -32,18 +33,18 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 	authModule := auth.NewModule()
 	storeModule := store.NewModule()
 	redisModule := redis.NewModule()
-	//ginModule := gin.NewModule()
+	ginModule := gin.NewModule()
 	gapiModule := gapi.NewModule()
 	grpcGatewayModule := grpcGateway.NewModule()
 
 	channel := make(chan os.Signal, 1)
 	return &MainInitProcess{
-		ConfigModule: configModule,
-		LogModule:    logModule,
-		AuthModule:   authModule,
-		StoreModule:  storeModule,
-		RedisModule:  redisModule,
-		//GinModule:         ginModule,
+		ConfigModule:      configModule,
+		LogModule:         logModule,
+		AuthModule:        authModule,
+		StoreModule:       storeModule,
+		RedisModule:       redisModule,
+		GinModule:         ginModule,
 		GRPCModule:        gapiModule,
 		GRPCGatewayModule: grpcGatewayModule,
 		OsChannel:         channel,
