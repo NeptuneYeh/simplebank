@@ -5,6 +5,7 @@ import (
 	"github.com/NeptuneYeh/simplebank/internal/grpcApp"
 	"github.com/NeptuneYeh/simplebank/pb"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rakyll/statik/fs"
 	"google.golang.org/protobuf/encoding/protojson"
 	"log"
 	"net/http"
@@ -45,9 +46,14 @@ func (module *Module) Run(address string) {
 	mux := http.NewServeMux()
 	mux.Handle("/", enableCors(grpcMux))
 
-	fs := http.FileServer(http.Dir("./doc/swagger"))
+	//fs := http.FileServer(http.Dir("./doc/swagger"))
+	statikFS, err := fs.New()
+	if err != nil {
+		log.Fatalf("cannot create statik file system: %v", err)
+	}
 	// 對外顯示 FQDN/swagger/index.html, 系統內部去掉 /swagger/ 然後在 ./doc/swagger 內尋找 index.html
-	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+	mux.Handle("/swagger/", swaggerHandler)
 
 	module.GrpcGatewayServer = &http.Server{
 		Addr:    address,

@@ -1,6 +1,7 @@
 package init
 
 import (
+	_ "github.com/NeptuneYeh/simplebank/doc/statik"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gapi"
