@@ -4,9 +4,9 @@ import (
 	"github.com/NeptuneYeh/simplebank/internal/grpcApp"
 	"github.com/NeptuneYeh/simplebank/pb"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 )
 
@@ -19,9 +19,13 @@ type Module struct {
 var MainGapi *Module
 
 func NewModule() *Module {
+
+	// TODO register logger Interceptor
+	grpcLogger := grpc.UnaryInterceptor(grpcApp.GrpcLogger)
+
 	gAPIModule := &Module{
 		GrpcApi:    grpcApp.NewModule(),
-		GrpcServer: grpc.NewServer(),
+		GrpcServer: grpc.NewServer(grpcLogger),
 	}
 
 	MainGapi = gAPIModule
@@ -33,7 +37,7 @@ func (module *Module) Run(address string) {
 	var err error
 	module.Listener, err = net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
+		log.Fatal().Err(err).Msg("Failed to listen")
 	}
 
 	// Register your services here
@@ -43,13 +47,13 @@ func (module *Module) Run(address string) {
 	go func() {
 		log.Printf("Starting gRPC server on %s\n", address)
 		if err := module.GrpcServer.Serve(module.Listener); err != nil {
-			log.Fatalf("Failed to serve: %v", err)
+			log.Fatal().Err(err).Msg("Failed to serve")
 		}
 	}()
 }
 
 func (module *Module) Shutdown() error {
 	module.GrpcServer.GracefulStop()
-	log.Println("gRPC server gracefully stopped")
+	log.Info().Msg("gRPC server gracefully stopped")
 	return nil
 }

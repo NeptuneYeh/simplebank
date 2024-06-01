@@ -55,9 +55,11 @@ func (module *Module) Run(address string) {
 	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
 	mux.Handle("/swagger/", swaggerHandler)
 
+	handler := grpcApp.HttpLogger(mux)
+
 	module.GrpcGatewayServer = &http.Server{
 		Addr:    address,
-		Handler: mux,
+		Handler: handler,
 	}
 
 	go func() {
