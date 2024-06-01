@@ -9,17 +9,20 @@ COPY . .
 # -installsuffix cgo 和 -a 搭配使用 給安装的包添加一个後綴確保构是完全乾淨重新建立的二進位文件
 # cgo 是後綴名，用意在於表達這是 CGO 禁止的情況下編譯的
 RUN GOOS=linux go build -o main ./cmd/main.go
-RUN apk add curl
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+# 將不在 Docker builder 內安裝 migrate，因為不在 docker 內執行 migrate
+# RUN apk add curl
+# RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
 
 FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
-COPY --from=builder /app/migrate ./migrate
+# 將不在 Docker builder 內安裝 migrate，因為不在 docker 內執行 migrate
+# COPY --from=builder /app/migrate ./migrate
 COPY app.env .env
 COPY build/start.sh .
-COPY scripts/db/migration ./migration
+COPY scripts/db/migration .scripts/db/migration
 
 EXPOSE 8080
+# 具體來說, ENTRYPOINT 會先執行, CMD 則提供默認的參數給 ENTRYPOINT.
 ENTRYPOINT ["/app/start.sh"]
 CMD ["/app/main"]
