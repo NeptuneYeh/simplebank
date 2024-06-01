@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/stretchr/testify/require"
@@ -52,4 +53,26 @@ func TestGetUser(t *testing.T) {
 
 	require.WithinDuration(t, user1.CreatedAt, user1Get.CreatedAt, time.Second)
 	require.WithinDuration(t, user1.PasswordChangedAt, user1Get.PasswordChangedAt, time.Second)
+}
+
+func TestUpdateUserOnlyFullName(t *testing.T) {
+	user1 := createTestUser(t)
+
+	arg := postgresdb.UpdateUserParams{
+		Username: user1.Username,
+		FullName: sql.NullString{
+			String: "test_full_name",
+			Valid:  true,
+		},
+	}
+
+	user, err := testQueries.UpdateUser(context.Background(), arg)
+	require.NoError(t, err)
+	require.NotEmpty(t, user)
+
+	require.NotEqual(t, user1.Username, user.Username)
+
+	require.Equal(t, user1.HashedPassword, user.HashedPassword)
+	require.Equal(t, arg.FullName, user.FullName)
+	require.Equal(t, user1.Email, user.Email)
 }
