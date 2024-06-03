@@ -2,6 +2,7 @@ package init
 
 import (
 	_ "github.com/NeptuneYeh/simplebank/doc/statik"
+	"github.com/NeptuneYeh/simplebank/init/asynq"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	"github.com/NeptuneYeh/simplebank/init/gapi"
@@ -22,6 +23,7 @@ type MainInitProcess struct {
 	AuthModule        *auth.Module
 	StoreModule       *store.Module
 	RedisModule       *redis.Module
+	AsynqModule       *asynq.Module
 	GinModule         *gin.Module
 	GRPCModule        *gapi.Module
 	GRPCGatewayModule *grpcGateway.Module
@@ -34,6 +36,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 	authModule := auth.NewModule()
 	storeModule := store.NewModule()
 	redisModule := redis.NewModule()
+	asynqModule := asynq.NewModule()
 	ginModule := gin.NewModule()
 	gapiModule := gapi.NewModule()
 	grpcGatewayModule := grpcGateway.NewModule()
@@ -45,6 +48,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 		AuthModule:        authModule,
 		StoreModule:       storeModule,
 		RedisModule:       redisModule,
+		AsynqModule:       asynqModule,
 		GinModule:         ginModule,
 		GRPCModule:        gapiModule,
 		GRPCGatewayModule: grpcGatewayModule,
@@ -55,6 +59,7 @@ func NewMainInitProcess(configPath string) *MainInitProcess {
 // Run run gin module
 func (m *MainInitProcess) Run() {
 	//m.GinModule.Run(m.ConfigModule.ServerAddress)
+	m.AsynqModule.Run(m.AsynqModule.RedisOpt, m.StoreModule.Store)
 	m.GRPCGatewayModule.Run(m.ConfigModule.ServerAddress)
 	m.GRPCModule.Run(m.ConfigModule.GRPCServerAddress)
 	// register os signal for graceful shutdown
@@ -62,6 +67,7 @@ func (m *MainInitProcess) Run() {
 	s := <-m.OsChannel
 	m.LogModule.Logger.Fatal().Msg("Received signal: " + s.String())
 	//_ = m.GinModule.Shutdown()
+	_ = m.AsynqModule.Shutdown()
 	_ = m.GRPCGatewayModule.Shutdown()
 	_ = m.GRPCModule.Shutdown()
 }

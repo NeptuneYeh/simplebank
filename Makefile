@@ -18,8 +18,9 @@ test_db:
 	go test -v -cover ./test/db/
 server:
 	go run ./cmd/main.go
-mock_db:
+mock:
 	mockgen -package mockdb -destination internal/infrastructure/database/postgres/mock/store.go github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc Store
+	mockgen -package mockwk -destination tools/worker/mock/distributor.go github.com/NeptuneYeh/simplebank/tools/worker TaskDistributor
 dev_service_up:
 	docker compose -p simple_bank up -d
 test_all:
@@ -35,4 +36,4 @@ proto:
 	statik -src=doc/swagger/ -dest=doc/
 
 
-.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock_db dev_service_up proto
+.PHONY: createdb dropdb postgres_init postgres_start postgres_stop migrate_up migrate_down sqlc test server mock dev_service_up proto

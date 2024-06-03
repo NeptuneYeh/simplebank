@@ -7,10 +7,13 @@ import (
 	"github.com/NeptuneYeh/simplebank/pb"
 	"github.com/NeptuneYeh/simplebank/tools/hashPassword"
 	"github.com/NeptuneYeh/simplebank/tools/inputValidator"
+	"github.com/NeptuneYeh/simplebank/tools/worker"
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 func (c *Module) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -24,14 +27,28 @@ func (c *Module) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 		return nil, status.Errorf(codes.Internal, "failed to hash password: %v", err)
 	}
 
-	arg := postgresdb.CreateUserParams{
-		Username:       req.GetUsername(),
-		HashedPassword: hashedPassword,
-		FullName:       req.GetFullName(),
-		Email:          req.GetEmail(),
+	arg := postgresdb.CreateUserTxParams{
+		CreateUserParams: postgresdb.CreateUserParams{
+			Username:       req.GetUsername(),
+			HashedPassword: hashedPassword,
+			FullName:       req.GetFullName(),
+			Email:          req.GetEmail(),
+		},
+		AfterCreate: func(user postgresdb.User) error {
+			// TODO send email to user
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+				asynq.Queue(worker.QuereCritical),
+			}
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: user.Username,
+			}
+			return c.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
 
-	user, err := c.store.CreateUser(ctx, arg)
+	txResult, err := c.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -44,7 +61,7 @@ func (c *Module) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 	}
 
 	rsp := &pb.CreateUserResponse{
-		User: convertUser(user),
+		User: convertUser(txResult.User),
 	}
 	return rsp, nil
 }
