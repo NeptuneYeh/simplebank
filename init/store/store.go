@@ -51,14 +51,16 @@ func NewModuleForTest(store postgresdb.Store) *Module {
 func runDBMigration(migrationURL string, dbSource string) {
 	// TODO run db migration
 	// TODO 應該要實作 prod phase 以外才會真正執行, 不然很危險
-	migration, err := migrate.New(migrationURL, dbSource)
-	if err != nil {
-		log.Fatal("cannot create migration: ", err)
-	}
+	if config.MainConfig.ENV != "prod" {
+		migration, err := migrate.New(migrationURL, dbSource)
+		if err != nil {
+			log.Fatal("cannot create migration: ", err)
+		}
 
-	if err = migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatal("cannot run migration up: ", err)
-	}
+		if err = migration.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+			log.Fatal("cannot run migration up: ", err)
+		}
 
-	log.Println("migration completed")
+		log.Println("migration completed")
+	}
 }
