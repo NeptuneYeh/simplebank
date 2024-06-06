@@ -1,13 +1,15 @@
 package store
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"log"
 )
@@ -20,7 +22,8 @@ type Module struct {
 
 func NewModule() *Module {
 	// init Store
-	conn, err := sql.Open(config.MainConfig.DBDriver, config.MainConfig.DBSource)
+	//conn, err := sql.Open(config.MainConfig.DBDriver, config.MainConfig.DBSource)
+	connPool, err := pgxpool.New(context.Background(), config.MainConfig.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
@@ -28,7 +31,7 @@ func NewModule() *Module {
 	// TODO run db migration
 	runDBMigration(config.MainConfig.MigrationURL, config.MainConfig.DBSource)
 
-	store := postgresdb.NewStore(conn)
+	store := postgresdb.NewStore(connPool)
 	MainStore = store
 
 	storeModule := &Module{

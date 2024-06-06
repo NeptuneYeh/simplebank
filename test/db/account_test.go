@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -18,7 +17,7 @@ func createTestAccount(t *testing.T) postgresdb.Account {
 		Currency: "USD",
 	}
 
-	account, err := testQueries.CreateAccount(context.Background(), arg)
+	account, err := testStore.CreateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 
@@ -39,7 +38,7 @@ func TestCreateAccount(t *testing.T) {
 func TestGetAccount(t *testing.T) {
 	account1 := createTestAccount(t)
 	// context.Background() 是 Go 語言中 context 包提供的一個函數，用於創建一個空的、背景（background）的 context.Context 實例
-	account1Get, err := testQueries.GetAccount(context.Background(), account1.ID)
+	account1Get, err := testStore.GetAccount(context.Background(), account1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, account1Get)
@@ -60,7 +59,7 @@ func TestUpdateAccount(t *testing.T) {
 		Balance: 1000,
 	}
 
-	account1Update, err := testQueries.UpdateAccount(context.Background(), arg)
+	account1Update, err := testStore.UpdateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, account1Update)
 
@@ -73,13 +72,13 @@ func TestUpdateAccount(t *testing.T) {
 
 func TestDeleteAccount(t *testing.T) {
 	account1 := createTestAccount(t)
-	err := testQueries.DeleteAccount(context.Background(), account1.ID)
+	err := testStore.DeleteAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
 
-	account1Get, err := testQueries.GetAccount(context.Background(), account1.ID)
+	account1Get, err := testStore.GetAccount(context.Background(), account1.ID)
 	require.Error(t, err)
 	// 這種斷言用於確保一個錯誤（err）的字串表示與預期的字串相等。
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, postgresdb.ErrRecordNotFound.Error())
 	require.Empty(t, account1Get)
 }
 
@@ -95,7 +94,7 @@ func TestListAccount(t *testing.T) {
 		Offset: 0,
 	}
 
-	accounts, err := testQueries.ListAccounts(context.Background(), arg)
+	accounts, err := testStore.ListAccounts(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 

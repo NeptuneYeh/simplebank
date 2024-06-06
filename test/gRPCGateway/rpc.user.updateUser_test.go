@@ -2,7 +2,6 @@ package gRPC
 
 import (
 	"context"
-	"database/sql"
 	"github.com/NeptuneYeh/simplebank/init/asynq"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/grpcGateway"
@@ -13,6 +12,7 @@ import (
 	"github.com/NeptuneYeh/simplebank/tools/token"
 	mockwk "github.com/NeptuneYeh/simplebank/tools/worker/mock"
 	"github.com/golang/mock/gomock"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
@@ -56,11 +56,11 @@ func TestGRPCGatewayUpdateUserAPI(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := postgresdb.UpdateUserParams{
 					Username: user.Username,
-					FullName: sql.NullString{
+					FullName: pgtype.Text{
 						String: newName,
 						Valid:  true,
 					},
-					Email: sql.NullString{
+					Email: pgtype.Text{
 						String: newEmail,
 						Valid:  true,
 					},

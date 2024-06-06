@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/NeptuneYeh/simplebank/init/store"
@@ -66,7 +65,7 @@ func (c *TransferController) CreateTransfer(ctx *gin.Context) {
 func (c *TransferController) validAccount(ctx *gin.Context, accountID int64, currency string) (postgresdb.Account, bool) {
 	account, err := c.store.GetAccount(ctx, accountID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, base.ErrorResponse(err))
 			return account, false
 		}

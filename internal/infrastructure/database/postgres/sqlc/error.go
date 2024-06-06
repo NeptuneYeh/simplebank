@@ -1,8 +1,8 @@
 package postgresdb
 
 import (
-	"database/sql"
 	"errors"
+	"github.com/jackc/pgx/v5"
 	"github.com/lib/pq"
 )
 
@@ -11,7 +11,8 @@ const (
 	UniqueViolation     = "23505"
 )
 
-var ErrRecordNotFound = sql.ErrNoRows
+// var ErrRecordNotFound = sql.ErrNoRows
+var ErrRecordNotFound = pgx.ErrNoRows
 
 var ErrUniqueViolation = &pq.Error{
 	Code: UniqueViolation,

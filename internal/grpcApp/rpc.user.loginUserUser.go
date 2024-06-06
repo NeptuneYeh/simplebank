@@ -2,7 +2,7 @@ package grpcApp
 
 import (
 	"context"
-	"database/sql"
+	"errors"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
@@ -23,7 +23,7 @@ func (c *Module) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 
 	user, err := c.store.GetUser(ctx, req.GetUsername())
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		return nil, status.Errorf(codes.Internal, "failed to login user")

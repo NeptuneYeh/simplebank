@@ -2,8 +2,8 @@ package worker
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/NeptuneYeh/simplebank/tools/helper"
@@ -43,7 +43,7 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Cont
 
 	account, err := processor.store.GetUser(ctx, payload.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			return fmt.Errorf("account doesn't exist: %w", asynq.SkipRetry)
 		}
 		return fmt.Errorf("failed to get account: %w", err)

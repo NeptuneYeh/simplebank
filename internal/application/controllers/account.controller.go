@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"github.com/NeptuneYeh/simplebank/init/store"
 	"github.com/NeptuneYeh/simplebank/internal/application/base"
@@ -66,7 +65,7 @@ func (c *AccountController) GetAccount(ctx *gin.Context) {
 
 	account, err := c.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, base.ErrorResponse(err))
 			return
 		}

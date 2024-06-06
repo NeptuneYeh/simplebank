@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/NeptuneYeh/simplebank/init/auth"
 	"github.com/NeptuneYeh/simplebank/init/config"
@@ -81,7 +81,7 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 
 	user, err := c.store.GetUser(ctx, req.Username)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
 			return
 		}
@@ -151,7 +151,7 @@ func (c *UserController) RenewAccessToken(ctx *gin.Context) {
 
 	session, err := c.store.GetSession(ctx, refreshPayload.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, postgresdb.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
 			return
 		}

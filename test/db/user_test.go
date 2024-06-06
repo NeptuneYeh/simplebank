@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
@@ -20,7 +20,7 @@ func createTestUser(t *testing.T) postgresdb.User {
 		Email:          "tom_" + fmt.Sprintf("%04d", randomNumber) + "@yopmail.com",
 	}
 
-	user, err := testQueries.CreateUser(context.Background(), arg)
+	user, err := testStore.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
@@ -41,7 +41,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestGetUser(t *testing.T) {
 	user1 := createTestUser(t)
-	user1Get, err := testQueries.GetUser(context.Background(), user1.Username)
+	user1Get, err := testStore.GetUser(context.Background(), user1.Username)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user1Get)
@@ -60,19 +60,19 @@ func TestUpdateUserOnlyFullName(t *testing.T) {
 
 	arg := postgresdb.UpdateUserParams{
 		Username: user1.Username,
-		FullName: sql.NullString{
+		FullName: pgtype.Text{
 			String: "test_full_name",
 			Valid:  true,
 		},
 	}
 
-	user, err := testQueries.UpdateUser(context.Background(), arg)
+	user, err := testStore.UpdateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
-	require.NotEqual(t, user1.Username, user.Username)
+	require.NotEqual(t, user1.FullName, user.FullName)
 
 	require.Equal(t, user1.HashedPassword, user.HashedPassword)
-	require.Equal(t, arg.FullName, user.FullName)
+	require.Equal(t, arg.FullName.String, user.FullName)
 	require.Equal(t, user1.Email, user.Email)
 }
