@@ -36,13 +36,13 @@ func (c *Module) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.L
 	}
 
 	// create accessToken
-	accessToken, accessPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.AccessTokenDuration)
+	accessToken, accessPayload, err := auth.MainAuth.CreateToken(user.Username, user.Role, config.MainConfig.AccessTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create access token")
 	}
 
 	// create refreshToken
-	refreshToken, refreshPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := auth.MainAuth.CreateToken(user.Username, user.Role, config.MainConfig.RefreshTokenDuration)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create refresh token")
 	}

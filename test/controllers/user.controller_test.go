@@ -12,6 +12,7 @@ import (
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/NeptuneYeh/simplebank/tools/hashPassword"
 	"github.com/NeptuneYeh/simplebank/tools/helper"
+	"github.com/NeptuneYeh/simplebank/tools/role"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -182,6 +183,7 @@ func randomUser(t *testing.T) (user postgresdb.User, password string) {
 	user = postgresdb.User{
 		Username:       "tom" + fmt.Sprintf("%04d", randomNumber),
 		HashedPassword: hashedPassword,
+		Role:           role.Depositor,
 		FullName:       "tom" + fmt.Sprintf("%04d", randomNumber),
 		Email:          "tom" + fmt.Sprintf("%04d", randomNumber) + "@yopmail.com",
 	}

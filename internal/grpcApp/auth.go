@@ -13,7 +13,7 @@ const (
 	authorizationHeader = "authorization"
 )
 
-func (c *Module) authUser(ctx context.Context) (*token.Payload, error) {
+func (c *Module) authUser(ctx context.Context, accessibleRoles []string) (*token.Payload, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil, fmt.Errorf("missing metadata")
@@ -37,4 +37,14 @@ func (c *Module) authUser(ctx context.Context) (*token.Payload, error) {
 	}
 
 	return payload, nil
+}
+
+func hasPermission(userRole string, accessibleRoles []string) bool {
+	for _, role := range accessibleRoles {
+		if userRole == role {
+			return true
+		}
+	}
+
+	return false
 }

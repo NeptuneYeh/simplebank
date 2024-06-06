@@ -8,6 +8,7 @@ import (
 	"github.com/NeptuneYeh/simplebank/pb"
 	"github.com/NeptuneYeh/simplebank/tools/hashPassword"
 	"github.com/NeptuneYeh/simplebank/tools/inputValidator"
+	"github.com/NeptuneYeh/simplebank/tools/role"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -16,7 +17,7 @@ import (
 )
 
 func (c *Module) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	authPayload, err := c.authUser(ctx)
+	authPayload, err := c.authUser(ctx, []string{role.BankerRole, role.Depositor})
 	if err != nil {
 		return nil, unauthenticatedError(err)
 	}
@@ -26,7 +27,7 @@ func (c *Module) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 		return nil, invalidArgumentError(violations)
 	}
 
-	if authPayload.Username != req.GetUsername() {
+	if authPayload.Role != role.BankerRole && authPayload.Username != req.GetUsername() {
 		return nil, status.Errorf(codes.PermissionDenied, "cannot update other user's profile")
 	}
 

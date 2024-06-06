@@ -95,14 +95,14 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 	}
 
 	// create accessToken
-	accessToken, accessPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.AccessTokenDuration)
+	accessToken, accessPayload, err := auth.MainAuth.CreateToken(user.Username, user.Role, config.MainConfig.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
 		return
 	}
 
 	// create refreshToken
-	refreshToken, refreshPayload, err := auth.MainAuth.CreateToken(user.Username, config.MainConfig.RefreshTokenDuration)
+	refreshToken, refreshPayload, err := auth.MainAuth.CreateToken(user.Username, user.Role, config.MainConfig.RefreshTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
 		return
@@ -182,7 +182,7 @@ func (c *UserController) RenewAccessToken(ctx *gin.Context) {
 	}
 
 	// create accessToken
-	accessToken, accessPayload, err := auth.MainAuth.CreateToken(refreshPayload.Username, config.MainConfig.AccessTokenDuration)
+	accessToken, accessPayload, err := auth.MainAuth.CreateToken(refreshPayload.Username, refreshPayload.Role, config.MainConfig.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(userRequests.ErrEmailOrPasswordNotCorrect))
 		return

@@ -29,9 +29,10 @@ func AddAuthorization(
 	tokenMaker token.Maker,
 	authorizationType string,
 	username string,
+	role string,
 	duration time.Duration,
 ) {
-	myToken, _, err := tokenMaker.CreateToken(username, duration)
+	myToken, _, err := tokenMaker.CreateToken(username, role, duration)
 	require.NoError(t, err)
 
 	authorizationHeader := fmt.Sprintf("%s %s", authorizationType, myToken)
@@ -55,7 +56,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				"currency": account.Currency,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := postgresdb.CreateAccountParams{
@@ -96,7 +97,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				"currency": account.Currency,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -114,7 +115,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				"currency": "invalid",
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -172,7 +173,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "Success",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -189,7 +190,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "UnauthorizedUser",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, "unauthorized_user", time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, "unauthorized_user", "zzz", time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -219,7 +220,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "NotFound",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 
 			buildStubs: func(store *mockdb.MockStore) {
@@ -236,7 +237,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InternalError",
 			accountID: account.ID,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -252,7 +253,7 @@ func TestGetAccountAPI(t *testing.T) {
 			name:      "InvalidID",
 			accountID: 0,
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -321,7 +322,7 @@ func TestListAccountAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := postgresdb.ListAccountsParams{
@@ -364,7 +365,7 @@ func TestListAccountAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -383,7 +384,7 @@ func TestListAccountAPI(t *testing.T) {
 				pageSize: n,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
@@ -401,7 +402,7 @@ func TestListAccountAPI(t *testing.T) {
 				pageSize: 100000,
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, time.Minute)
+				AddAuthorization(t, request, tokenMaker, myMiddlewares.AuthorizationTypeBearer, user.Username, user.Role, time.Minute)
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
