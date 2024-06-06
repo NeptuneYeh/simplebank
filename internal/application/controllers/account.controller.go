@@ -9,8 +9,6 @@ import (
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/NeptuneYeh/simplebank/tools/token"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"net/http"
 )
 
@@ -41,14 +39,13 @@ func (c *AccountController) CreateAccount(ctx *gin.Context) {
 
 	account, err := c.store.CreateAccount(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			//logger.MainLog.Error().Msg(pqErr.Code.Name())
-			switch pqErr.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
-				ctx.JSON(http.StatusForbidden, base.ErrorResponse(err))
-				return
-			}
+		switch postgresdb.ErrorCode(err) {
+		case postgresdb.ForeignKeyViolation:
+		case postgresdb.UniqueViolation:
+			ctx.JSON(http.StatusForbidden, base.ErrorResponse(err))
+			return
 		}
+
 		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(err))
 		return
 	}

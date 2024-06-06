@@ -10,7 +10,6 @@ import (
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/NeptuneYeh/simplebank/tools/token"
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
 	"net/http"
 )
 

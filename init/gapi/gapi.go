@@ -3,7 +3,6 @@ package gapi
 import (
 	"github.com/NeptuneYeh/simplebank/internal/grpcApp"
 	"github.com/NeptuneYeh/simplebank/pb"
-	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"

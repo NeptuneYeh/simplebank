@@ -11,7 +11,6 @@ import (
 	"github.com/NeptuneYeh/simplebank/init/logger"
 	"github.com/NeptuneYeh/simplebank/init/redis"
 	"github.com/NeptuneYeh/simplebank/init/store"
-	_ "github.com/lib/pq"
 	"os"
 	"os/signal"
 	"syscall"

@@ -5,7 +5,6 @@ import (
 	"github.com/NeptuneYeh/simplebank/init/config"
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
 	"testing"

@@ -2,8 +2,9 @@ package postgresdb
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 const (
@@ -14,14 +15,15 @@ const (
 // var ErrRecordNotFound = sql.ErrNoRows
 var ErrRecordNotFound = pgx.ErrNoRows
 
-var ErrUniqueViolation = &pq.Error{
+var ErrUniqueViolation = &pgconn.PgError{
 	Code: UniqueViolation,
 }
 
 func ErrorCode(err error) string {
-	var pgErr *pq.Error
+	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		return pgErr.Code.Name()
+		fmt.Println(">>", pgErr.ConstraintName)
+		return pgErr.Code
 	}
 	return ""
 }

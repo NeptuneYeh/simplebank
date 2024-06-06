@@ -9,7 +9,6 @@ import (
 	"github.com/NeptuneYeh/simplebank/tools/inputValidator"
 	"github.com/NeptuneYeh/simplebank/tools/worker"
 	"github.com/hibiken/asynq"
-	"github.com/lib/pq"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -50,14 +49,14 @@ func (c *Module) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb
 
 	txResult, err := c.store.CreateUserTx(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				return nil, status.Errorf(codes.AlreadyExists, "username already exists: %v", err)
-			}
+
+		switch postgresdb.ErrorCode(err) {
+		case postgresdb.UniqueViolation:
+			return nil, status.Errorf(codes.AlreadyExists, err.Error())
 		}
+
 		logger.MainLog.Error().Msg(err.Error())
-		return nil, status.Errorf(codes.AlreadyExists, "failed to create user: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to create user: %v", err)
 	}
 
 	rsp := &pb.CreateUserResponse{

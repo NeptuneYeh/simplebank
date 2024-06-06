@@ -12,7 +12,6 @@ import (
 	postgresdb "github.com/NeptuneYeh/simplebank/internal/infrastructure/database/postgres/sqlc"
 	"github.com/NeptuneYeh/simplebank/tools/hashPassword"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 	"net/http"
 	"time"
 )
@@ -49,13 +48,12 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 
 	user, err := c.store.CreateUser(ctx, arg)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Code.Name() {
-			case "unique_violation":
-				ctx.JSON(http.StatusForbidden, base.ErrorResponse(err))
-				return
-			}
+		switch postgresdb.ErrorCode(err) {
+		case postgresdb.UniqueViolation:
+			ctx.JSON(http.StatusForbidden, base.ErrorResponse(err))
+			return
 		}
+
 		logger.MainLog.Error().Msg(err.Error())
 		ctx.JSON(http.StatusInternalServerError, base.ErrorResponse(err))
 		return
