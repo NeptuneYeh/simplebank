@@ -22,7 +22,7 @@ COPY app.env .env
 COPY build/start.sh .
 COPY scripts/db/migration .scripts/db/migration
 
-EXPOSE 8080
+EXPOSE 8080 9090
 # 具體來說, ENTRYPOINT 會先執行, CMD 則提供默認的參數給 ENTRYPOINT.
 ENTRYPOINT ["/app/start.sh"]
 CMD ["/app/main"]
